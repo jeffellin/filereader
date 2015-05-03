@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/file http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		 http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+      <int-file:inbound-channel-adapter id="inboundfolder"
+                                        directory="/Users/jellin/tmp/admin/in"
+                                        scanner="recursiveScanner"
+                                        auto-create-directory="true"
+                                        prevent-duplicates="true"
+              >
+        <int:poller id="poller" fixed-delay="5000" max-messages-per-poll="100"  />
+    </int-file:inbound-channel-adapter>
+
+    <bean id="recursiveScanner" class="org.springframework.integration.file.RecursiveLeafOnlyDirectoryScanner"/>
+
+    <int:channel id="fileProcessingChannel" >
+        <int:dispatcher task-executor="pool"/>
+    </int:channel>
+
+    <int:service-activator input-channel="fileProcessingChannel"  output-channel="fileOut" ref="testService"/>
+
+    <int:aggregator id="fileAggregator"
+                       input-channel="inboundfolder"
+                       output-channel="fileProcessingChannel"
+                       ref="testAggregator"
+                       method="aggregateFiles"
+                       message-store="messageStore"
+                       expire-groups-upon-completion="true"
+                       send-partial-result-on-expiry="true" />
+
+    <bean id="messageStore" class="org.springframework.integration.store.SimpleMessageStore"/>
+
+    <int:splitter id="fileOutSpliiter"  input-channel="fileOut" output-channel="toDelete"/>
+
+
+    <int-file:outbound-channel-adapter  id="toDelete" auto-create-directory="true" delete-source-files="true" directory="/Users/jellin/tmp/admin/out"/>
+
+    <task:executor id="pool" pool-size="10"
+                   queue-capacity="10" />
+
+</beans>
