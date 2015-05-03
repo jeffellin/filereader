@@ -24,6 +24,6 @@ a dispatcher was added to the fileProcessingChannel, this allows the service act
 to process released message groups in parallel using a spring executor.
 
 
-View the [Integration Context] (src/resources/applicationContext.xml)
+View the [Integration Context] (src/main/resources/applicationContext.xml)
 
 
