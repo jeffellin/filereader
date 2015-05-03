@@ -18,7 +18,7 @@ In order to process the files both files need to be received.  The followng Spri
 5. Outbound file channel adapter will move the file to a new a completed location.
 
 
-#Additioanl info:
+#Additional info:
  
 a dispatcher was added to the fileProcessingChannel, this allows the service activator
 to process released message groups in parallel using a spring executor.
